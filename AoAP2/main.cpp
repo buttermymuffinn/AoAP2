@@ -3,6 +3,44 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
+#include <cmath>
+
+/*
+a lot of messing around with +1's here due to how we calculate the true value of elements
+based on "free" rows and the fact that our array starts at element 0,0 - not 1,1 \
+but honestly I went mad trying to get the +1's to line up correctly, and don't feel like messing with them
+anymore right now - someone else feel free to revamp the function if you have the time
+- Adrian Miranda
+*/
+void calculateSum(int secPrev, int prev, int rows, int columns, int iter, std::vector<std::vector <int> > inputArray, std::vector<int> *outputArray){
+    int value, temp = 0, row = 0;
+    int min = std::min(secPrev, prev);
+    int max = std::max(secPrev, prev);
+    // debug print function
+    // std::cout << "Running calculate with min: " << min << " and max: " << max << std::endl;
+    for(int j=0; j<rows; j++){
+
+        // calculating real value of an element based on "free" rows
+        if(j+1 >= min && j+1 <= max){
+            value = inputArray[j][iter];
+        }else{
+            value = inputArray[j][iter] - std::min((2*std::abs(((j+1)-min)) ), (2*std::abs(((j+1)-max))));
+        }
+
+        if(value >= temp){
+            temp = value;
+            row = j;
+        }
+    }
+    temp = inputArray[row][iter];
+    secPrev = prev;
+    prev = row+1;
+    outputArray->push_back(temp);
+    if(iter+1 < columns){
+        calculateSum(secPrev, prev, rows, columns, iter+1, inputArray, outputArray);
+    }
+}
 
 int main(){
     // stream object to hold input from file for sanitation
@@ -49,23 +87,14 @@ int main(){
         std::cout << std::endl;
     }
     
-
-
+    calculateSum(1, 1, rows, columns, 0, inputArray, &answerArray);
 
     /*
-
-
-        project code here
-
-
+    we still need to calculate the final sum of the chosen array values
+    and output that to the text file
+    - Adrian Miranda
     */
 
-
-
-
-
-    // The following code should be at the end of the project
-    // it is the output file management and formatting 
     /* 
     this chunk of code checks to see if output.txt is an empty file
     if it is empty, then it creates an output file stream to it
@@ -91,8 +120,8 @@ int main(){
     for(int i=0; i<answerArray.size(); i++){
         outputFile << answerArray[i] << ' ';
     }
-    outputFile << '\n';
     outputFile.close();
 
+    
     return 0;
 }
